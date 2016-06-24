@@ -3,6 +3,6 @@
 ## Installation
 
 ```
-git clone git@github.com:mverwe/topskim.git topskim
+git clone git@github.com:gkrintir/topskim.git topskim
 ```
 # topskim
