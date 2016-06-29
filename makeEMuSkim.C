@@ -51,8 +51,8 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
   if(isDebug) std::cout << __LINE__ << std::endl;
 
   TFile* outFile_p = new TFile(outFileName.c_str(), "RECREATE");
-  skimTree_p = new TTree("skimTree", "skimTree");
-  BookTree();
+//  skimTree_p = new TTree("skimTree", "skimTree");
+//  BookTree();
 
   std::vector<std::string>* inFileNames_p = new std::vector<std::string>;
   inFileNames_p->push_back(inFileName);
@@ -60,6 +60,22 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
 
   const Int_t nFiles = (Int_t)inFileNames_p->size();
 
+  TH1F *nj = new TH1F("nj","number of jets",10.,0.,10.);
+  TH1F *nbjets = new TH1F("nbjets","number of b_jets",10.,0.,10.);
+  TH1F *jetpt = new TH1F("jetpt","pseudorapidity",50.,0.,200.);
+
+  TH1F *bjetcutflow = new TH1F("bjetcutflow",";Cut;Events" ,11,0.,11.);
+  bjetcutflow->GetXaxis()->SetBinLabel(1,"1j,=0b");
+  bjetcutflow->GetXaxis()->SetBinLabel(2,"1j,=1b");
+  bjetcutflow->GetXaxis()->SetBinLabel(3,"2j,=0b");
+  bjetcutflow->GetXaxis()->SetBinLabel(4,"2j,=1b");
+  bjetcutflow->GetXaxis()->SetBinLabel(5,"2j,#geq2b");
+  bjetcutflow->GetXaxis()->SetBinLabel(6,"3j,=0b");
+  bjetcutflow->GetXaxis()->SetBinLabel(7,"3j,=1b");
+  bjetcutflow->GetXaxis()->SetBinLabel(8,"3j,#geq2b");
+  bjetcutflow->GetXaxis()->SetBinLabel(9,"4j,=0b");
+  bjetcutflow->GetXaxis()->SetBinLabel(10,"4j,=1b");
+  bjetcutflow->GetXaxis()->SetBinLabel(11,"4j,#geq2b");
 
   for(Int_t fileIter = 0; fileIter < nFiles; fileIter++){
     std::cout << "On file: " << fileIter << "/" << nFiles << std::endl;
@@ -99,7 +115,7 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
     Float_t         jteta[maxJets];
     Float_t         jtphi[maxJets];
     Float_t         jtm[maxJets]; 
-    Float_t         discr_csvV1[maxJets]; 
+    Float_t         discr_csvV2[maxJets]; 
 
     int trig = 0;
     
@@ -156,14 +172,14 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
     jetTree_p->SetBranchStatus("jtphi", 1);
     jetTree_p->SetBranchStatus("jteta", 1);
     jetTree_p->SetBranchStatus("jtm", 1);
-    jetTree_p->SetBranchStatus("discr_csvV1", 1);
+    jetTree_p->SetBranchStatus("discr_csvV2", 1);
         
     jetTree_p->SetBranchAddress("nref", &nref);
     jetTree_p->SetBranchAddress("jtpt", jtpt);
     jetTree_p->SetBranchAddress("jtphi", jtphi);
     jetTree_p->SetBranchAddress("jteta", jteta);
     jetTree_p->SetBranchAddress("jtm", jtm);
-    jetTree_p->SetBranchAddress("discr_csvV1", discr_csvV1);
+    jetTree_p->SetBranchAddress("discr_csvV2", discr_csvV2);
     
     hiTree_p->SetBranchStatus("*", 0);
     hiTree_p->SetBranchStatus("run", 1);
@@ -196,6 +212,7 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
     
     for(Int_t entry = 0; entry < nEntries; entry++){
       if(isDebug) std::cout << __LINE__ << std::endl;
+      nj->Fill(nMaxJets);
       
       if(entry%entryDiv == 0 && nEntries >= 10000) std::cout << "Entry # " << entry << "/" << nEntries << std::endl;
       if(isDebug) std::cout << __LINE__ << std::endl;
@@ -205,9 +222,9 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
       hiTree_p->GetEntry(entry);
       hltTree_p->GetEntry(entry);
 
-      if(!trig) continue;
+//      if(!trig) continue;
       
-      if(TMath::Abs(vz_) > 15) continue;
+//      if(TMath::Abs(vz_) > 15) continue;
       
       if(isDebug) std::cout << __LINE__ << std::endl;
       
@@ -246,7 +263,7 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
          jtEta_[ij] = -999.;
          jtPhi_[ij] = -999.;
          jtM_[ij] = -999.;
-         discr_csvV1_[ij] = -999.;
+         discr_csvV2_[ij] = -999.;
        }
       
       if(isDebug) std::cout << __LINE__ << std::endl;
@@ -258,16 +275,16 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
 
       //Find two leading muons
       for(Int_t muIter = 0; muIter < nMu; muIter++){
-	if(TMath::Abs(muEta_p->at(muIter)) > muEtaCut) continue;
-	if(muPt_p->at(muIter) < muPtCut) continue;
+//	if(TMath::Abs(muEta_p->at(muIter)) > muEtaCut) continue;
+//	if(muPt_p->at(muIter) < muPtCut) continue;
 	
-	if(muChi2NDF_p->at(muIter) >= muChi2NDFCut) continue;
-	if(TMath::Abs(muInnerD0_p->at(muIter)) > muInnerD0Cut) continue;
-	if(TMath::Abs(muInnerDz_p->at(muIter)) > muInnerDzCut) continue;
-	if(muMuonHits_p->at(muIter) <= muMuonHitsCut) continue;
-	if(muStations_p->at(muIter) <= muStationsCut) continue;
-	if(muTrkLayers_p->at(muIter) <= muTrkLayersCut) continue;
-	if(muPixelHits_p->at(muIter) <= muPixelHitsCut) continue;
+//	if(muChi2NDF_p->at(muIter) >= muChi2NDFCut) continue;
+//	if(TMath::Abs(muInnerD0_p->at(muIter)) > muInnerD0Cut) continue;
+//	if(TMath::Abs(muInnerDz_p->at(muIter)) > muInnerDzCut) continue;
+//	if(muMuonHits_p->at(muIter) <= muMuonHitsCut) continue;
+//	if(muStations_p->at(muIter) <= muStationsCut) continue;
+//	if(muTrkLayers_p->at(muIter) <= muTrkLayersCut) continue;
+//	if(muPixelHits_p->at(muIter) <= muPixelHitsCut) continue;
 
 	if(muPt_p->at(muIter) > lepPt_[0]){
 	  tempMuPt_[1] = tempMuPt_[0];
@@ -291,18 +308,18 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
       //Find two leading electrons
       const Int_t nEle = (Int_t)elePt_p->size();
       for(Int_t eleIter = 0; eleIter < nEle; eleIter++){
-	if(TMath::Abs(eleEta_p->at(eleIter)) > eleEtaCut) continue;
-	if(elePt_p->at(eleIter) < elePtCut) continue;	
+//	if(TMath::Abs(eleEta_p->at(eleIter)) > eleEtaCut) continue;
+//	if(elePt_p->at(eleIter) < elePtCut) continue;	
 
 	Int_t eleEtaCutPos = 0;
 	if(TMath::Abs(eleEta_p->at(eleIter)) > barrelEndcapEta) eleEtaCutPos = 1;
 	
-	if(eleSigmaIEtaIEta_p->at(eleIter) > eleSigmaIEtaIEta_VetoCut[eleEtaCutPos]) continue;
-	if(TMath::Abs(eleDEtaAtVtx_p->at(eleIter)) > eleDEtaIn_VetoCut[eleEtaCutPos]) continue;
-	if(TMath::Abs(eleDPhiAtVtx_p->at(eleIter)) > eleDPhiIn_VetoCut[eleEtaCutPos]) continue;
-	if(eleHOverE_p->at(eleIter) > eleHOverE_VetoCut[eleEtaCutPos]) continue;
-	if(TMath::Abs(eleD0_p->at(eleIter)) > eleD0_VetoCut[eleEtaCutPos]) continue;
-	if(TMath::Abs(eleDz_p->at(eleIter)) > eleDZ_VetoCut[eleEtaCutPos]) continue;
+//	if(eleSigmaIEtaIEta_p->at(eleIter) > eleSigmaIEtaIEta_VetoCut[eleEtaCutPos]) continue;
+//	if(TMath::Abs(eleDEtaAtVtx_p->at(eleIter)) > eleDEtaIn_VetoCut[eleEtaCutPos]) continue;
+//	if(TMath::Abs(eleDPhiAtVtx_p->at(eleIter)) > eleDPhiIn_VetoCut[eleEtaCutPos]) continue;
+//	if(eleHOverE_p->at(eleIter) > eleHOverE_VetoCut[eleEtaCutPos]) continue;
+//	if(TMath::Abs(eleD0_p->at(eleIter)) > eleD0_VetoCut[eleEtaCutPos]) continue;
+//	if(TMath::Abs(eleDz_p->at(eleIter)) > eleDZ_VetoCut[eleEtaCutPos]) continue;
 
 	if(elePt_p->at(eleIter) > tempElePt_[0]){
 	  tempElePt_[1] = tempElePt_[0];
@@ -326,7 +343,7 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
       //store electrons and muons in out tree
       int lepIter = 0;
       for(Int_t muIter = 0; muIter < 2; muIter++){
-        if(tempMuPt_[muIter]<0.) continue;
+//        if(tempMuPt_[muIter]<0.) continue;
         lepPt_[lepIter] = tempMuPt_[muIter];
         lepPhi_[lepIter] = tempMuPhi_[muIter];
         lepEta_[lepIter] = tempMuEta_[muIter];
@@ -335,7 +352,7 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
         ++lepIter;
       }
       for(Int_t eleIter = 0; eleIter < 2; eleIter++){
-        if(tempElePt_[eleIter]<0.) continue;
+//        if(tempElePt_[eleIter]<0.) continue;
         lepPt_[lepIter] = tempElePt_[eleIter];
         lepPhi_[lepIter] = tempElePhi_[eleIter];
         lepEta_[lepIter] = tempEleEta_[eleIter];
@@ -343,22 +360,39 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
         lepID_[lepIter] = eleID;
         ++lepIter;
       }
-      if(lepIter<2) continue;
+//      if(lepIter<2) continue;
       nLep_ = lepIter;
 
-      int njets = 0;
+      int njets = 0, nBtags = 0;
       for(Int_t jetIter = 0; jetIter < nref; jetIter++){
-        if(jtpt[jetIter]<jetPtCut) continue;
+//        if(jtpt[jetIter]<jetPtCut) continue;
         jtPt_[njets]  = jtpt[jetIter];
         jtEta_[njets] = jteta[jetIter];
         jtPhi_[njets] = jtphi[jetIter];
         jtM_[njets]   = jtm[jetIter]; 
-        discr_csvV1_[njets] = discr_csvV1[jetIter];
+        discr_csvV2_[njets] = discr_csvV2[jetIter];
         ++njets;
+        if(discr_csvV2_[njets]>0.800)
+        {
+          nBtags++;
+        }
       }
       nJt_ = njets;
-
-      skimTree_p->Fill();
+      nj->Fill(njets);
+        nbjets->Fill(nBtags);
+      jetpt->Fill(jtPt_[0]);
+     
+      if(njets==1 && nBtags ==0) bjetcutflow->Fill(0);
+      if(njets==1 && nBtags ==1) bjetcutflow->Fill(1);
+      if(njets==2 && nBtags ==0) bjetcutflow->Fill(2);
+      if(njets==2 && nBtags ==1) bjetcutflow->Fill(3);
+      if(njets==2 && nBtags >=2) bjetcutflow->Fill(4);
+      if(njets==3 && nBtags ==0) bjetcutflow->Fill(5);
+      if(njets>=3 && nBtags ==1) bjetcutflow->Fill(6);
+      if(njets>=3 && nBtags >=2) bjetcutflow->Fill(7);
+      if(njets>=4 && nBtags ==0) bjetcutflow->Fill(8);
+      if(njets>=4 && nBtags ==1) bjetcutflow->Fill(9);
+      if(njets>=4 && nBtags >=2) bjetcutflow->Fill(10);
       
     }//entries loop
 
@@ -371,8 +405,10 @@ void makeEMuSkim(const std::string inFileName = "", const std::string outFileNam
   pathStr1.Write("", TObject::kOverwrite);
   TNamed pathStr2("pathStr2", inFileName.c_str());
   pathStr2.Write("", TObject::kOverwrite);
-  skimTree_p->Write("", TObject::kOverwrite);
-
+  nj->Write();//"", TObject::kOverwrite);
+  nbjets->Write();//"", TObject::kOverwrite);
+  jetpt->Write();//"", TObject::kOverwrite);
+  bjetcutflow->Write();
   outFile_p->Close();
   delete outFile_p;
 
